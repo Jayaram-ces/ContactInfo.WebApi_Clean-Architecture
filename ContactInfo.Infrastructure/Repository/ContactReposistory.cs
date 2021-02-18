@@ -1,6 +1,8 @@
 ﻿using ContactInfo.Application.Interfaces;
 using ContactInfo.Core.Entities;
+using ContactInfo.Infrastructure.Contexts;
 using Dapper;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
@@ -13,66 +15,62 @@ namespace ContactInfo.Infrastructure.Repository
 {
     public class ContactReposistory : IContactRepository
     {
-        private readonly IConfiguration configuration;
-        public ContactReposistory(IConfiguration configuration)
+        private readonly IConfiguration _configuration;
+        public ContactInfoContext _dataBase;
+        public ContactReposistory(IConfiguration configuration, ContactInfoContext dataBase)
         {
-            this.configuration = configuration;
+            _configuration = configuration;
+            _dataBase = dataBase;
         }
-        public async Task<int> AddAsync(Contact entity)
+        public async Task<int> AddAsync(Contact contact)
         {
-            entity.AddedOn = DateTime.Now;
-            var sql = "Insert into Contacts (FirstName,LastName,MobileNumber,EmailId,AddedOn) VALUES (@FirstName,@LastName,@MobileNumber,@EmailId,@AddedOn)";
-            using (var connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection")))
-            {
-                connection.Open();
-                var result = await connection.ExecuteAsync(sql, entity);
-                return result;
-            }
+            var result = await _dataBase.Contacts.AddAsync(contact);
+            return await _dataBase.SaveChangesAsync();
         }
 
         public async Task<int> DeleteAsync(int id)
         {
-            var sql = "DELETE FROM Contacts WHERE Id = @Id";
-            using (var connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection")))
-            {
-                connection.Open();
-                var result = await connection.ExecuteAsync(sql, new { Id = id });
-                return result;
-            }
+            var contact = await _dataBase.Contacts.FirstOrDefaultAsync(x => x.Id == id);
+
+            if (contact == null)
+                throw new Exception("No such contact found in the database");
+
+            _dataBase.Contacts.Remove(contact);
+            return await _dataBase.SaveChangesAsync();
         }
 
         public async Task<IReadOnlyList<Contact>> GetAllAsync()
         {
-            var sql = "SELECT * FROM Contacts";
-            using (var connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection")))
-            {
-                connection.Open();
-                var result = await connection.QueryAsync<Contact>(sql);
-                return result.ToList();
-            }
+            return await _dataBase.Contacts.ToListAsync();
         }
 
         public async Task<Contact> GetByIdAsync(int id)
         {
-            var sql = "SELECT * FROM Contacts WHERE Id = @Id";
-            using (var connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection")))
-            {
-                connection.Open();
-                var result = await connection.QuerySingleOrDefaultAsync<Contact>(sql, new { Id = id });
-                return result;
-            }
+            return await (from c in _dataBase.Contacts
+                          where c.Id == id
+                          select new Contact
+                          {
+                              Id = c.Id,
+                              FirstName = c.FirstName,
+                              LastName = c.LastName,
+                              EmailId = c.EmailId,
+                              MobileNumber = c.MobileNumber
+                          }).FirstOrDefaultAsync();
         }
 
-        public async Task<int> UpdateAsync(Contact entity)
+        public async Task<int> UpdateAsync(Contact contact)
         {
-            entity.ModifiedOn = DateTime.Now;
-            var sql = "UPDATE Contacts SET FirstName = @FirstName, LastName = @LastName, MobileNumber = @MobileNumber, EmailId = @EmailId, ModifiedOn = @ModifiedOn  WHERE Id = @Id";
-            using (var connection = new SqlConnection(configuration.GetConnectionString("DefaultConnection")))
-            {
-                connection.Open();
-                var result = await connection.ExecuteAsync(sql, entity);
-                return result;
-            }
+            var searchContact = await _dataBase.Contacts.FirstOrDefaultAsync(x => x.Id == contact.Id);
+
+            if (searchContact == null)
+                throw new Exception("No such contact found in the database");
+
+            searchContact.EmailId = contact.EmailId;
+            searchContact.FirstName = contact.FirstName;
+            searchContact.LastName = contact.LastName;
+            searchContact.MobileNumber = searchContact.MobileNumber;
+            _dataBase.Contacts.Update(searchContact);
+            return await _dataBase.SaveChangesAsync();
         }
     }
 }

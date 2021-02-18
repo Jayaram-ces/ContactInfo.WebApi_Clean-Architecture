@@ -1,6 +1,9 @@
 ﻿using ContactInfo.Application.Interfaces;
 using ContactInfo.Core.Entities;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,46 +13,151 @@ using System.Threading.Tasks;
 
 namespace ContactInfo.WebApi.Controllers
 {
-    [Route("api/[controller]")]
+    [Authorize]
+    [Route("[controller]")]
     [ApiController]
     public class ContactController : ControllerBase
     {
         private readonly IUnitOfWork unitOfWork;
+        private readonly ILogger<ContactController> _logger;
 
-        public ContactController(IUnitOfWork unitOfWork)
+        public ContactController(IUnitOfWork unitOfWork, ILogger<ContactController> logger)
         {
             this.unitOfWork = unitOfWork;
+            _logger = logger;
         }
+
+        /// <summary>
+        /// Get all contacts
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [ProducesResponseType(typeof(IReadOnlyList<Contact>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var data = await unitOfWork.Contacts.GetAllAsync();
-            return Ok(data);
+            try
+            {
+                var result = await unitOfWork.Contacts.GetAllAsync();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogInformation("Retrieving contacts failed.");
+                _logger.LogCritical(ex, ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
         }
+
+        /// <summary>
+        /// Get a contact by Id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet("{id}")]
+        [ProducesResponseType(typeof(Contact), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetById(int id)
         {
-            var data = await unitOfWork.Contacts.GetByIdAsync(id);
-            if (data == null) return Ok();
-            return Ok(data);
+            try
+            {
+                var contact = await unitOfWork.Contacts.GetByIdAsync(id);
+                if (contact == null)
+                {
+                    return NotFound("Not found in the directory.");
+                }
+
+                return Ok(contact);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogInformation("Failed to retrieve the contact.");
+                _logger.LogCritical(ex, ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
         }
+
+        /// <summary>
+        /// Add contact
+        /// </summary>
+        /// <param name="contact"></param>
+        /// <returns></returns>
         [HttpPost]
-        public async Task<IActionResult> Add(Contact contact)
+        [ProducesResponseType(typeof(SerializableError), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> AddAsync(Contact contact)
         {
-            var data = await unitOfWork.Contacts.AddAsync(contact);
-            return Ok(data);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                await unitOfWork.Contacts.AddAsync(contact);
+                return Ok("Contact added successfully");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogInformation("Adding contact to directary failed.");
+                _logger.LogCritical(ex, ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
         }
-        [HttpDelete]
-        public async Task<IActionResult> Delete(int id)
+
+        /// <summary>
+        /// Delete contact in the directory
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpDelete("{id}")]
+        [ProducesResponseType(typeof(Contact), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> DeleteAsync(int id)
         {
-            var data = await unitOfWork.Contacts.DeleteAsync(id);
-            return Ok(data);
+            try
+            {
+                await unitOfWork.Contacts.DeleteAsync(id);
+                return Ok("Contact Deleted successfully");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogInformation("Failed to delete the contact.");
+                _logger.LogCritical(ex, ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
         }
+
+        /// <summary>
+        /// Update the contact
+        /// </summary>
+        /// <param name="contact"></param>
+        /// <returns></returns>
         [HttpPut]
-        public async Task<IActionResult> Update(Contact contact)
+        [ProducesResponseType(typeof(SerializableError), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> UpdateAsync(Contact contact)
         {
-            var data = await unitOfWork.Contacts.UpdateAsync(contact);
-            return Ok(data);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                await unitOfWork.Contacts.UpdateAsync(contact);
+                return Ok("Contact updated successfully");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogInformation("Failed to update the contact.");
+                _logger.LogCritical(ex, ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
         }
     }
 }

@@ -1,7 +1,4 @@
 ﻿using ContactInfo.Application.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ContactInfo.Infrastructure.Repository
 {
@@ -12,7 +9,6 @@ namespace ContactInfo.Infrastructure.Repository
         public UnitOfWork(IContactRepository contactRepository)
         {
             Contacts = contactRepository;
-        }
-       
+        }     
     }
 }

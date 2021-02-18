@@ -19,9 +19,5 @@ namespace ContactInfo.Core.Entities
         [Required(ErrorMessage = "The email address is required")]
         [EmailAddress(ErrorMessage = "Invalid Email Address")]
         public string EmailId { get; set; }
-
-        public DateTime AddedOn { get; set; }
-
-        public DateTime ModifiedOn { get; set; }
     }
 }
