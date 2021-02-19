@@ -97,7 +97,7 @@ namespace ContactInfo.WebApi.Controllers
 
             try
             {
-                await unitOfWork.Contacts.AddAsync(contact);
+                await unitOfWork.Contacts.CreateAsync(contact);
                 return Ok("Contact added successfully");
             }
             catch (Exception ex)

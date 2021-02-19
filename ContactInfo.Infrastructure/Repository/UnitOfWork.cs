@@ -4,11 +4,11 @@ namespace ContactInfo.Infrastructure.Repository
 {
     public class UnitOfWork : IUnitOfWork
     {
-        public IContactRepository Contacts { get; }
+        public IContactService Contacts { get; }
 
-        public UnitOfWork(IContactRepository contactRepository)
+        public UnitOfWork(IContactService contactService)
         {
-            Contacts = contactRepository;
+            Contacts = contactService;
         }     
     }
 }

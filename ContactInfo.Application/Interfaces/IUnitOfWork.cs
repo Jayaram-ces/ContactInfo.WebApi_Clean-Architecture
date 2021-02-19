@@ -6,6 +6,6 @@ namespace ContactInfo.Application.Interfaces
 {
     public interface IUnitOfWork
     {
-        IContactRepository Contacts { get; }
+        IContactService Contacts { get; }
     }
 }

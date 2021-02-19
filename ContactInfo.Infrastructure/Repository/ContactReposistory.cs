@@ -1,14 +1,11 @@
 ﻿using ContactInfo.Application.Interfaces;
 using ContactInfo.Core.Entities;
-using ContactInfo.Infrastructure.Contexts;
 using Dapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using System;
+using MySqlConnector;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace ContactInfo.Infrastructure.Repository
@@ -16,61 +13,63 @@ namespace ContactInfo.Infrastructure.Repository
     public class ContactReposistory : IContactRepository
     {
         private readonly IConfiguration _configuration;
-        public ContactInfoContext _dataBase;
-        public ContactReposistory(IConfiguration configuration, ContactInfoContext dataBase)
+        public ContactReposistory(IConfiguration configuration)
         {
             _configuration = configuration;
-            _dataBase = dataBase;
         }
         public async Task<int> AddAsync(Contact contact)
         {
-            var result = await _dataBase.Contacts.AddAsync(contact);
-            return await _dataBase.SaveChangesAsync();
+            var sql = "Insert into Contacts (Id,FirstName,LastName,MobileNumber,EmailId) VALUES (@Id,@FirstName,@LastName,@MobileNumber,@EmailId)";
+            using (var connection = new MySqlConnection(_configuration.GetConnectionString("IdentityConnection")))
+            {
+                connection.Open();
+                var result = await connection.ExecuteAsync(sql, contact);
+                return result;
+            }
         }
 
         public async Task<int> DeleteAsync(int id)
         {
-            var contact = await _dataBase.Contacts.FirstOrDefaultAsync(x => x.Id == id);
-
-            if (contact == null)
-                throw new Exception("No such contact found in the database");
-
-            _dataBase.Contacts.Remove(contact);
-            return await _dataBase.SaveChangesAsync();
+            var sql = "DELETE FROM Contacts WHERE Id = @Id";
+            using (var connection = new MySqlConnection(_configuration.GetConnectionString("IdentityConnection")))
+            {
+                connection.Open();
+                var result = await connection.ExecuteAsync(sql, new { Id = id });
+                return result;
+            }
         }
 
         public async Task<IReadOnlyList<Contact>> GetAllAsync()
         {
-            return await _dataBase.Contacts.ToListAsync();
+            var sql = "SELECT * FROM Contacts";
+            using (var connection = new MySqlConnection(_configuration.GetConnectionString("IdentityConnection")))
+            {
+                connection.Open();
+                var result = await connection.QueryAsync<Contact>(sql);
+                return result.ToList();
+            }
         }
 
         public async Task<Contact> GetByIdAsync(int id)
         {
-            return await (from c in _dataBase.Contacts
-                          where c.Id == id
-                          select new Contact
-                          {
-                              Id = c.Id,
-                              FirstName = c.FirstName,
-                              LastName = c.LastName,
-                              EmailId = c.EmailId,
-                              MobileNumber = c.MobileNumber
-                          }).FirstOrDefaultAsync();
+            var sql = "SELECT * FROM Contacts WHERE Id = @Id";
+            using (var connection = new MySqlConnection(_configuration.GetConnectionString("IdentityConnection")))
+            {
+                connection.Open();
+                var result = await connection.QuerySingleOrDefaultAsync<Contact>(sql, new { Id = id });
+                return result;
+            }
         }
 
         public async Task<int> UpdateAsync(Contact contact)
         {
-            var searchContact = await _dataBase.Contacts.FirstOrDefaultAsync(x => x.Id == contact.Id);
-
-            if (searchContact == null)
-                throw new Exception("No such contact found in the database");
-
-            searchContact.EmailId = contact.EmailId;
-            searchContact.FirstName = contact.FirstName;
-            searchContact.LastName = contact.LastName;
-            searchContact.MobileNumber = searchContact.MobileNumber;
-            _dataBase.Contacts.Update(searchContact);
-            return await _dataBase.SaveChangesAsync();
+            var sql = "UPDATE Contacts SET FirstName = @FirstName, LastName = @LastName, MobileNumber = @MobileNumber, EmailId = @EmailId  WHERE Id = @Id";
+            using (var connection = new MySqlConnection(_configuration.GetConnectionString("IdentityConnection")))
+            {
+                connection.Open();
+                var result = await connection.ExecuteAsync(sql, contact);
+                return result;
+            }
         }
     }
 }

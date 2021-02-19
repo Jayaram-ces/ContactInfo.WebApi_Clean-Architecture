@@ -1,6 +1,7 @@
 ﻿using ContactInfo.Application.Interfaces;
 using ContactInfo.Infrastructure.Contexts;
 using ContactInfo.Infrastructure.Repository;
+using ContactInfo.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,6 +16,7 @@ namespace ContactInfo.Infrastructure
         public static void AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddTransient<IContactRepository, ContactReposistory>();
+            services.AddTransient<IContactService, ContactService>();
             services.AddTransient<IUnitOfWork, UnitOfWork>();
 
             string _defaultConnection = configuration.GetConnectionString("DefaultConnection");

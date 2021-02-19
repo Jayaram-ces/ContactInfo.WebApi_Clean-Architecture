@@ -133,14 +133,14 @@ namespace ContactInfo.WebApi.Test.ControllerTest
         {
             var exception = _fixture.Create<AggregateException>();
             var request = _fixture.Create<Contact>();
-            _unitOfWorkMock.Setup(x => x.Contacts.AddAsync(request)).ThrowsAsync(exception);
+            _unitOfWorkMock.Setup(x => x.Contacts.CreateAsync(request)).ThrowsAsync(exception);
 
             var actual = await _contactController.AddAsync(request) as ObjectResult;
 
             Assert.NotNull(actual);
             Assert.Equal(StatusCodes.Status500InternalServerError, actual.StatusCode);
             Assert.Equal(exception.Message, actual.Value);
-            _unitOfWorkMock.Verify(m => m.Contacts.AddAsync(request), Times.Once);
+            _unitOfWorkMock.Verify(m => m.Contacts.CreateAsync(request), Times.Once);
             _unitOfWorkMock.VerifyNoOtherCalls();
         }
 
@@ -149,14 +149,14 @@ namespace ContactInfo.WebApi.Test.ControllerTest
         {
             string expected = "Contact added successfully";
             var request = _fixture.Create<Contact>();
-            _unitOfWorkMock.Setup(x => x.Contacts.AddAsync(request)).ReturnsAsync(1);
+            _unitOfWorkMock.Setup(x => x.Contacts.CreateAsync(request)).ReturnsAsync(1);
 
             var actual = await _contactController.AddAsync(request) as ObjectResult;
 
             Assert.NotNull(actual);
             Assert.Equal(StatusCodes.Status200OK, actual.StatusCode);
             Assert.Equal(expected, actual.Value);
-            _unitOfWorkMock.Verify(m => m.Contacts.AddAsync(request), Times.Once);
+            _unitOfWorkMock.Verify(m => m.Contacts.CreateAsync(request), Times.Once);
             _unitOfWorkMock.VerifyNoOtherCalls();
         }
 
