@@ -20,7 +20,7 @@ namespace ContactInfo.Infrastructure.Repository
         {
             Connection.Execute(
                 "Insert into Contacts (Id,FirstName,LastName,MobileNumber,EmailId) VALUES (@Id,@FirstName,@LastName,@MobileNumber,@EmailId)",
-                param: new {Id = contact.Id, FirstName = contact.FirstName, LastName = contact.LastName, MobileNumber = contact.MobileNumber, EmailId = contact.EmailId },
+                param: new { Id = contact.Id, FirstName = contact.FirstName, LastName = contact.LastName, MobileNumber = contact.MobileNumber, EmailId = contact.EmailId },
                 transaction: Transaction
             );
 
