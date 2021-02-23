@@ -16,21 +16,21 @@ namespace ContactInfo.WebApi.Test.ServiceTest
     {
         private readonly Fixture _fixture = new Fixture();
         private readonly IContactService _contactService;
-        private readonly Mock<IContactRepository> _contactRepository = new Mock<IContactRepository>();
+        private readonly Mock<IUnitOfWork> _uow = new Mock<IUnitOfWork>();
 
         public ContactServiceTest()
         {
             
-            _contactService = new ContactService(_contactRepository.Object);
+            _contactService = new ContactService(_uow.Object);
         }
 
         [Fact]
         public async void GetAllAsync_GivenValidInput_ShouldReturnAllContacts()
         {
             var expected = _fixture.Build<Contact>().CreateMany().ToList();
-            _contactRepository.Setup(x => x.GetAllAsync()).ReturnsAsync(expected);
+            _uow.Setup(x => x.ContactRepository.GetAllAsync()).Returns(expected);
 
-            var actual = await _contactService.GetAllAsync();
+            var actual = _contactService.GetAllAsync();
 
             Assert.NotNull(actual);
             actual.Should().BeEquivalentTo(expected);
@@ -41,9 +41,9 @@ namespace ContactInfo.WebApi.Test.ServiceTest
         {
             int random = new Random().Next(0, 2);
             var expected = _fixture.Build<Contact>().CreateMany().ToList();
-            _contactRepository.Setup(x => x.GetByIdAsync(random)).ReturnsAsync(expected[random]);
+            _uow.Setup(x => x.ContactRepository.GetById(random)).Returns(expected[random]);
 
-            var actual = await _contactService.GetByIdAsync(random);
+            var actual = _contactService.GetByIdAsync(random);
 
             actual.Should().NotBeNull().And.BeEquivalentTo(expected[random]);
         }
@@ -52,33 +52,37 @@ namespace ContactInfo.WebApi.Test.ServiceTest
         public async void AddAsync_GivenValidInput_VerifyContactGetsAddedToDB()
         {
             var request = _fixture.Build<Contact>().With(i => i.Id, 44444).Create();
-            _contactRepository.Setup(x => x.AddAsync(request)).ReturnsAsync(1);
+            _uow.Setup(x => x.ContactRepository.AddAsync(request));
 
-            var actual = await _contactService.CreateAsync(request);
+            _contactService.CreateAsync(request);
 
-            actual.Should().BeGreaterThan(0);
+            _uow.Verify(x => x.ContactRepository.AddAsync(request), Times.Once);
         }
 
         [Fact]
-        public async void DeleteAsync_GivenValidInput_VerifyContactDeletedFromDB()
+        public void DeleteAsync_GivenValidInput_VerifyContactDeletedFromDB()
         {
             var request = _fixture.Create<int>();
-            _contactRepository.Setup(x => x.DeleteAsync(request)).ReturnsAsync(1);
+            var response = _fixture.Build<Contact>().With(i => i.Id, 55555).Create();
+            _uow.Setup(x => x.ContactRepository.GetById(request)).Returns(response);
+            _uow.Setup(x => x.ContactRepository.DeleteAsync(request));
 
-            var actual = await _contactService.DeleteAsync(request);
+            _contactService.DeleteAsync(request);
 
-            actual.Should().BeGreaterThan(0);
+            _uow.Verify(x => x.ContactRepository.DeleteAsync(request), Times.Once);
         }
 
         [Fact]
         public async void UpdateAsync_GivenInValidInput_VerifyContactUpdatedInDB()
         {
             var request = _fixture.Create<Contact>();
-            _contactRepository.Setup(x => x.UpdateAsync(request)).ReturnsAsync(1);
+            var response = _fixture.Build<Contact>().With(i => i.Id, 66666).Create();
+            _uow.Setup(x => x.ContactRepository.GetById(request.Id)).Returns(response);
+            _uow.Setup(x => x.ContactRepository.UpdateAsync(request));
 
-            var actual = await _contactService.UpdateAsync(request);
+            _contactService.UpdateAsync(request);
 
-            actual.Should().BeGreaterThan(0);
+            _uow.Verify(x => x.ContactRepository.UpdateAsync(request), Times.Once);
         }
 
         [Fact]
@@ -87,9 +91,9 @@ namespace ContactInfo.WebApi.Test.ServiceTest
             var request = _fixture.Create<int>();
             Mock<Exception> exp = new Mock<Exception>();
             exp.Setup(x => x.Message).Returns("No such contact found in the database");
-            _contactRepository.Setup(x => x.DeleteAsync(request)).ThrowsAsync(exp.Object);
+            _uow.Setup(x => x.ContactRepository.DeleteAsync(request)).Throws(exp.Object);
 
-            Assert.ThrowsAnyAsync<Exception>(() => _contactService.DeleteAsync(request)).Result.Message.Should().BeEquivalentTo("No such contact found in the database");
+            Assert.Throws<Exception>(() => _contactService.DeleteAsync(request)).Message.Should().BeEquivalentTo("No such contact found in the database");
         }
 
         [Fact]
@@ -99,10 +103,10 @@ namespace ContactInfo.WebApi.Test.ServiceTest
 
             Mock<Exception> exp = new Mock<Exception>();
             exp.Setup(x => x.Message).Returns("No such contact found in the database");
-            _contactRepository.Setup(x => x.UpdateAsync(request)).ThrowsAsync(exp.Object);
+            _uow.Setup(x => x.ContactRepository.UpdateAsync(request)).Throws(exp.Object);
 
 
-            Assert.ThrowsAnyAsync<Exception>(() => _contactService.UpdateAsync(request)).Result.Message.Should().BeEquivalentTo("No such contact found in the database");
+            Assert.Throws<Exception>(() => _contactService.UpdateAsync(request)).Message.Should().BeEquivalentTo("No such contact found in the database");
         }
     }
 }

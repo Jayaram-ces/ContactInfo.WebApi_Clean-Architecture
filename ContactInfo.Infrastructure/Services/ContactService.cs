@@ -9,45 +9,45 @@ namespace ContactInfo.Infrastructure.Services
 {
     public class ContactService : IContactService
     {
-        public readonly IContactRepository _contactRepository;
+        private readonly IUnitOfWork unitOfWork;
 
-        public ContactService(IContactRepository contactRepository)
+        public ContactService(IUnitOfWork _unitOfWork)
         {
-            _contactRepository = contactRepository;
+            unitOfWork = _unitOfWork;
         }
-        public Task<int> CreateAsync(Contact contact)
+        public void CreateAsync(Contact contact)
         {
-            return  _contactRepository.AddAsync(contact);
+            unitOfWork.ContactRepository.AddAsync(contact);
         }
 
-        public Task<int> DeleteAsync(int id)
+        public void DeleteAsync(int id)
         {
-            var searchContact = _contactRepository.GetByIdAsync(id);
+            var searchContact = unitOfWork.ContactRepository.GetById(id);
 
             if (searchContact == null)
                 throw new Exception("No such contact found in the database");
 
-            return _contactRepository.DeleteAsync(id);
+            unitOfWork.ContactRepository.DeleteAsync(id);
         }
 
-        public Task<IReadOnlyList<Contact>> GetAllAsync()
+        public IEnumerable<Contact> GetAllAsync()
         {
-            return _contactRepository.GetAllAsync();
+            return unitOfWork.ContactRepository.GetAllAsync();
         }
 
-        public Task<Contact> GetByIdAsync(int id)
+        public Contact GetByIdAsync(int id)
         {
-            return _contactRepository.GetByIdAsync(id);
+            return unitOfWork.ContactRepository.GetById(id);
         }
 
-        public Task<int> UpdateAsync(Contact contact)
+        public void UpdateAsync(Contact contact)
         {
-            var searchContact = _contactRepository.GetByIdAsync(contact.Id);
+            var searchContact = unitOfWork.ContactRepository.GetById(contact.Id);
 
             if (searchContact == null)
                 throw new Exception("No such contact found in the database");
 
-            return _contactRepository.UpdateAsync(contact);
+            unitOfWork.ContactRepository.UpdateAsync(contact);
         }
     }
 }

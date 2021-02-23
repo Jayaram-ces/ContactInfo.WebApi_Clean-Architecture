@@ -5,71 +5,65 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using MySqlConnector;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace ContactInfo.Infrastructure.Repository
 {
-    public class ContactReposistory : IContactRepository
+    internal class ContactReposistory : RepositoryBase, IContactRepository
     {
-        private readonly IConfiguration _configuration;
-        public ContactReposistory(IConfiguration configuration)
+        public ContactReposistory(IDbTransaction transaction) : base(transaction)
         {
-            _configuration = configuration;
         }
-        public async Task<int> AddAsync(Contact contact)
+        public void AddAsync(Contact contact)
         {
-            var sql = "Insert into Contacts (Id,FirstName,LastName,MobileNumber,EmailId) VALUES (@Id,@FirstName,@LastName,@MobileNumber,@EmailId)";
-            using (var connection = new MySqlConnection(_configuration.GetConnectionString("IdentityConnection")))
-            {
-                connection.Open();
-                var result = await connection.ExecuteAsync(sql, contact);
-                return result;
-            }
+            Connection.Execute(
+                "Insert into Contacts (Id,FirstName,LastName,MobileNumber,EmailId) VALUES (@Id,@FirstName,@LastName,@MobileNumber,@EmailId)",
+                param: new {Id = contact.Id, FirstName = contact.FirstName, LastName = contact.LastName, MobileNumber = contact.MobileNumber, EmailId = contact.EmailId },
+                transaction: Transaction
+            );
+
+            Transaction.Commit();
         }
 
-        public async Task<int> DeleteAsync(int id)
+        public void DeleteAsync(int id)
         {
-            var sql = "DELETE FROM Contacts WHERE Id = @Id";
-            using (var connection = new MySqlConnection(_configuration.GetConnectionString("IdentityConnection")))
-            {
-                connection.Open();
-                var result = await connection.ExecuteAsync(sql, new { Id = id });
-                return result;
-            }
+            var result = Connection.Execute(
+                "DELETE FROM Contacts WHERE Id = @Id",
+                param: new { Id = id },
+                transaction: Transaction
+            );
+
+            Transaction.Commit();
+
         }
 
-        public async Task<IReadOnlyList<Contact>> GetAllAsync()
+        public IEnumerable<Contact> GetAllAsync()
         {
-            var sql = "SELECT * FROM Contacts";
-            using (var connection = new MySqlConnection(_configuration.GetConnectionString("IdentityConnection")))
-            {
-                connection.Open();
-                var result = await connection.QueryAsync<Contact>(sql);
-                return result.ToList();
-            }
+            return Connection.Query<Contact>("SELECT * FROM Contacts",
+                                                 transaction: Transaction
+                                            ).ToList();
         }
 
-        public async Task<Contact> GetByIdAsync(int id)
+        public Contact GetById(int id)
         {
-            var sql = "SELECT * FROM Contacts WHERE Id = @Id";
-            using (var connection = new MySqlConnection(_configuration.GetConnectionString("IdentityConnection")))
-            {
-                connection.Open();
-                var result = await connection.QuerySingleOrDefaultAsync<Contact>(sql, new { Id = id });
-                return result;
-            }
+            return Connection.Query<Contact>("SELECT * FROM Contacts WHERE Id = @Id",
+                                                  param: new { Id = id },
+                                                  transaction: Transaction
+                                            ).FirstOrDefault();
         }
 
-        public async Task<int> UpdateAsync(Contact contact)
+        public void UpdateAsync(Contact contact)
         {
-            var sql = "UPDATE Contacts SET FirstName = @FirstName, LastName = @LastName, MobileNumber = @MobileNumber, EmailId = @EmailId  WHERE Id = @Id";
-            using (var connection = new MySqlConnection(_configuration.GetConnectionString("IdentityConnection")))
-            {
-                connection.Open();
-                var result = await connection.ExecuteAsync(sql, contact);
-                return result;
-            }
+            Connection.Execute(
+                "UPDATE Contacts SET FirstName = @FirstName, LastName = @LastName, MobileNumber = @MobileNumber, EmailId = @EmailId  WHERE Id = @Id",
+                param: new { Id = contact.Id, FirstName = contact.FirstName, LastName = contact.LastName, MobileNumber = contact.MobileNumber, EmailId = contact.EmailId },
+                transaction: Transaction
+            );
+
+            Transaction.Commit();
+
         }
     }
 }

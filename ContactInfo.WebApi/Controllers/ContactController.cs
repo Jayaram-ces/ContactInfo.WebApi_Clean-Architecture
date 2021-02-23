@@ -18,12 +18,12 @@ namespace ContactInfo.WebApi.Controllers
     [ApiController]
     public class ContactController : ControllerBase
     {
-        private readonly IUnitOfWork unitOfWork;
+        private readonly IContactService _contactService;
         private readonly ILogger<ContactController> _logger;
 
-        public ContactController(IUnitOfWork unitOfWork, ILogger<ContactController> logger)
+        public ContactController(ILogger<ContactController> logger, IContactService contactService)
         {
-            this.unitOfWork = unitOfWork;
+            _contactService = contactService;
             _logger = logger;
         }
 
@@ -39,7 +39,7 @@ namespace ContactInfo.WebApi.Controllers
         {
             try
             {
-                var result = await unitOfWork.Contacts.GetAllAsync();
+                var result = _contactService.GetAllAsync();
                 return Ok(result);
             }
             catch (Exception ex)
@@ -63,7 +63,7 @@ namespace ContactInfo.WebApi.Controllers
         {
             try
             {
-                var contact = await unitOfWork.Contacts.GetByIdAsync(id);
+                var contact = _contactService.GetByIdAsync(id);
                 if (contact == null)
                 {
                     return NotFound("Not found in the directory.");
@@ -97,7 +97,7 @@ namespace ContactInfo.WebApi.Controllers
 
             try
             {
-                await unitOfWork.Contacts.CreateAsync(contact);
+                _contactService.CreateAsync(contact);
                 return Ok("Contact added successfully");
             }
             catch (Exception ex)
@@ -120,7 +120,7 @@ namespace ContactInfo.WebApi.Controllers
         {
             try
             {
-                await unitOfWork.Contacts.DeleteAsync(id);
+                 _contactService.DeleteAsync(id);
                 return Ok("Contact Deleted successfully");
             }
             catch (Exception ex)
@@ -149,7 +149,7 @@ namespace ContactInfo.WebApi.Controllers
 
             try
             {
-                await unitOfWork.Contacts.UpdateAsync(contact);
+                _contactService.UpdateAsync(contact);
                 return Ok("Contact updated successfully");
             }
             catch (Exception ex)

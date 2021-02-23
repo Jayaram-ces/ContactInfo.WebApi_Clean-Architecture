@@ -15,14 +15,15 @@ namespace ContactInfo.Infrastructure
     {
         public static void AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddTransient<IContactRepository, ContactReposistory>();
+            services.AddScoped<IUnitOfWork, UnitOfWork>(provider => new UnitOfWork(configuration.GetConnectionString("IdentityConnection")));
+            //services.AddScoped<IContactRepository, ContactReposistory>();
             services.AddTransient<IContactService, ContactService>();
-            services.AddTransient<IUnitOfWork, UnitOfWork>();
+            //services.AddTransient<IUnitOfWork, UnitOfWork>();
 
             string _defaultConnection = configuration.GetConnectionString("DefaultConnection");
             string _identityConnection = configuration.GetConnectionString("IdentityConnection");
             services.AddDbContext<ApplicationDbContext>(options => options.UseMySql(_defaultConnection, ServerVersion.AutoDetect(_defaultConnection)));
-            services.AddDbContext<ContactInfoContext>(options => options.UseMySql(_identityConnection, ServerVersion.AutoDetect(_identityConnection)));
+            //services.AddDbContext<ContactInfoContext>(options => options.UseMySql(_identityConnection, ServerVersion.AutoDetect(_identityConnection)));
         }
     }
 }

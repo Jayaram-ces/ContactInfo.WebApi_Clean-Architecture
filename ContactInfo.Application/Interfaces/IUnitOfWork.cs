@@ -4,8 +4,11 @@ using System.Text;
 
 namespace ContactInfo.Application.Interfaces
 {
-    public interface IUnitOfWork
+    public interface IUnitOfWork : IDisposable
     {
-        IContactService Contacts { get; }
+        //IContactService Contacts { get; }
+        IContactRepository ContactRepository { get; }
+
+        void Commit();
     }
 }

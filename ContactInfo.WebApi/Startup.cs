@@ -1,6 +1,8 @@
+using ContactInfo.Application.Interfaces;
 using ContactInfo.Infrastructure;
 using ContactInfo.Infrastructure.Authentication;
 using ContactInfo.Infrastructure.Contexts;
+using ContactInfo.Infrastructure.Repository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -28,6 +30,7 @@ namespace ContactInfo.WebApi
         {
             services.AddInfrastructure(Configuration);
             services.AddControllers();
+            
             services.AddSwaggerGen(c =>
             {
                 c.IncludeXmlComments(string.Format(@"{0}\ContactInfo.WebApi.xml", System.AppDomain.CurrentDomain.BaseDirectory));

@@ -5,10 +5,10 @@ namespace ContactInfo.Application.Interfaces
 {
     public interface IBaseService<T> where T : class
     {
-        Task<T> GetByIdAsync(int id);
-        Task<IReadOnlyList<T>> GetAllAsync();
-        Task<int> CreateAsync(T entity);
-        Task<int> UpdateAsync(T entity);
-        Task<int> DeleteAsync(int id);
+        T GetByIdAsync(int id);
+        IEnumerable<T> GetAllAsync();
+        void CreateAsync(T entity);
+        void UpdateAsync(T entity);
+        void DeleteAsync(int id);
     }
 }
