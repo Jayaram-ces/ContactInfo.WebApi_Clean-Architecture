@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace ContactInfo.WebApi.Controllers
 {
-    //[Authorize]
+    [Authorize]
     [Route("[controller]")]
     [ApiController]
     public class ContactController : ControllerBase
