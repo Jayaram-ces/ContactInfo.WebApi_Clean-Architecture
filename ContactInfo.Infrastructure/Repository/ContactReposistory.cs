@@ -16,7 +16,7 @@ namespace ContactInfo.Infrastructure.Repository
         public ContactReposistory(IDbTransaction transaction) : base(transaction)
         {
         }
-        public void AddAsync(Contact contact)
+        public async Task AddAsync(Contact contact)
         {
             Connection.Execute(
                 "Insert into Contacts (Id,FirstName,LastName,MobileNumber,EmailId) VALUES (@Id,@FirstName,@LastName,@MobileNumber,@EmailId)",
@@ -27,7 +27,7 @@ namespace ContactInfo.Infrastructure.Repository
             Transaction.Commit();
         }
 
-        public void DeleteAsync(int id)
+        public async Task DeleteAsync(int id)
         {
             var result = Connection.Execute(
                 "DELETE FROM Contacts WHERE Id = @Id",
@@ -39,14 +39,14 @@ namespace ContactInfo.Infrastructure.Repository
 
         }
 
-        public IEnumerable<Contact> GetAllAsync()
+        public async Task<IEnumerable<Contact>> GetAllAsync()
         {
             return Connection.Query<Contact>("SELECT * FROM Contacts",
                                                  transaction: Transaction
                                             ).ToList();
         }
 
-        public Contact GetById(int id)
+        public async Task<Contact> GetById(int id)
         {
             return Connection.Query<Contact>("SELECT * FROM Contacts WHERE Id = @Id",
                                                   param: new { Id = id },
@@ -54,7 +54,7 @@ namespace ContactInfo.Infrastructure.Repository
                                             ).FirstOrDefault();
         }
 
-        public void UpdateAsync(Contact contact)
+        public async Task UpdateAsync(Contact contact)
         {
             Connection.Execute(
                 "UPDATE Contacts SET FirstName = @FirstName, LastName = @LastName, MobileNumber = @MobileNumber, EmailId = @EmailId  WHERE Id = @Id",

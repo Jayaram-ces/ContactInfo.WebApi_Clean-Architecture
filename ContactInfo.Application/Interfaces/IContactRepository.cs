@@ -8,10 +8,10 @@ namespace ContactInfo.Application.Interfaces
 {
     public interface IContactRepository
     {
-        Contact GetById(int id);
-        IEnumerable<Contact> GetAllAsync();
-        void AddAsync(Contact entity);
-        void UpdateAsync(Contact entity);
-        void DeleteAsync(int id);
+        Task<Contact> GetById(int id);
+        Task<IEnumerable<Contact>> GetAllAsync();
+        Task AddAsync(Contact entity);
+        Task UpdateAsync(Contact entity);
+        Task DeleteAsync(int id);
     }
 }

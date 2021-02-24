@@ -45,10 +45,10 @@ namespace ContactInfo.WebApi.Test.ControllerTest
         }
 
         [Fact]
-        public async void GetAllAsync_WhenContactReposistorySuccessful_ReturnsOkWithContacts()
+        public async Task GetAllAsync_WhenContactReposistorySuccessful_ReturnsOkWithContacts()
         {
             var expected = _fixture.Create<IReadOnlyList<Contact>>();
-            _contactService.Setup(x => x.GetAllAsync()).Returns(expected);
+            _contactService.Setup(x => x.GetAllAsync()).ReturnsAsync(expected);
 
             var actual = await _contactController.GetAll() as ObjectResult;
 
@@ -83,7 +83,7 @@ namespace ContactInfo.WebApi.Test.ControllerTest
         public async Task GetByIdAsync_WhenContactReposistorySuccessful_ReturnsOkWithContact()
         {
             var expected = _fixture.Create<Contact>();
-            _contactService.Setup(x => x.GetByIdAsync(expected.Id)).Returns(expected);
+            _contactService.Setup(x => x.GetByIdAsync(expected.Id)).ReturnsAsync(expected);
 
             var actual = await _contactController.GetById(expected.Id) as ObjectResult;
 
@@ -100,7 +100,7 @@ namespace ContactInfo.WebApi.Test.ControllerTest
             string expected = "Not found in the directory.";
             Contact reponse = null;
             var request = _fixture.Create<int>();
-            _contactService.Setup(x => x.GetByIdAsync(request)).Returns(reponse);
+            _contactService.Setup(x => x.GetByIdAsync(request)).ReturnsAsync(reponse);
 
             var actual = await _contactController.GetById(request) as NotFoundObjectResult;
 
@@ -145,7 +145,7 @@ namespace ContactInfo.WebApi.Test.ControllerTest
         }
 
         [Fact]
-        public async void AddAsync_WhenContactReposistorySuccessful_ReturnsOk()
+        public async Task AddAsync_WhenContactReposistorySuccessful_ReturnsOk()
         {
             string expected = "Contact added successfully";
             var request = _fixture.Create<Contact>();
@@ -193,7 +193,7 @@ namespace ContactInfo.WebApi.Test.ControllerTest
         }
 
         [Fact]
-        public async void UpdateAsync_WhenContactReposistorySuccessful_ReturnsOk()
+        public async Task UpdateAsync_WhenContactReposistorySuccessful_ReturnsOk()
         {
             string expected = "Contact updated successfully";
             var request = _fixture.Create<Contact>();
@@ -226,7 +226,7 @@ namespace ContactInfo.WebApi.Test.ControllerTest
         }
 
         [Fact]
-        public async void DeleteContact_WhenContactReposistorySuccessful_ReturnsOk()
+        public async Task DeleteContact_WhenContactReposistorySuccessful_ReturnsOk()
         {
             string expected = "Contact Deleted successfully";
             var request = _fixture.Create<int>();

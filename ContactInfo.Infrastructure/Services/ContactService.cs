@@ -15,39 +15,39 @@ namespace ContactInfo.Infrastructure.Services
         {
             unitOfWork = _unitOfWork;
         }
-        public void CreateAsync(Contact contact)
+        public async Task CreateAsync(Contact contact)
         {
-            unitOfWork.ContactRepository.AddAsync(contact);
+           await unitOfWork.ContactRepository.AddAsync(contact);
         }
 
-        public void DeleteAsync(int id)
+        public async Task DeleteAsync(int id)
         {
-            var searchContact = unitOfWork.ContactRepository.GetById(id);
+            var searchContact = await unitOfWork.ContactRepository.GetById(id);
 
             if (searchContact == null)
                 throw new Exception("No such contact found in the database");
 
-            unitOfWork.ContactRepository.DeleteAsync(id);
+           await unitOfWork.ContactRepository.DeleteAsync(id);
         }
 
-        public IEnumerable<Contact> GetAllAsync()
+        public async Task<IEnumerable<Contact>> GetAllAsync()
         {
-            return unitOfWork.ContactRepository.GetAllAsync();
+            return await unitOfWork.ContactRepository.GetAllAsync();
         }
 
-        public Contact GetByIdAsync(int id)
+        public async Task<Contact> GetByIdAsync(int id)
         {
-            return unitOfWork.ContactRepository.GetById(id);
+            return await unitOfWork.ContactRepository.GetById(id);
         }
 
-        public void UpdateAsync(Contact contact)
+        public async Task UpdateAsync(Contact contact)
         {
-            var searchContact = unitOfWork.ContactRepository.GetById(contact.Id);
+            var searchContact = await unitOfWork.ContactRepository.GetById(contact.Id);
 
             if (searchContact == null)
                 throw new Exception("No such contact found in the database");
 
-            unitOfWork.ContactRepository.UpdateAsync(contact);
+            await unitOfWork.ContactRepository.UpdateAsync(contact);
         }
     }
 }

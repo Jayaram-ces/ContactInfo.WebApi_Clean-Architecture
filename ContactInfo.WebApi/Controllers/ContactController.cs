@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace ContactInfo.WebApi.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [Route("[controller]")]
     [ApiController]
     public class ContactController : ControllerBase
@@ -39,7 +39,7 @@ namespace ContactInfo.WebApi.Controllers
         {
             try
             {
-                var result = _contactService.GetAllAsync();
+                var result = await _contactService.GetAllAsync();
                 return Ok(result);
             }
             catch (Exception ex)
@@ -63,7 +63,7 @@ namespace ContactInfo.WebApi.Controllers
         {
             try
             {
-                var contact = _contactService.GetByIdAsync(id);
+                var contact = await _contactService.GetByIdAsync(id);
                 if (contact == null)
                 {
                     return NotFound("Not found in the directory.");
@@ -97,7 +97,7 @@ namespace ContactInfo.WebApi.Controllers
 
             try
             {
-                _contactService.CreateAsync(contact);
+                await _contactService.CreateAsync(contact);
                 return Ok("Contact added successfully");
             }
             catch (Exception ex)
@@ -120,7 +120,7 @@ namespace ContactInfo.WebApi.Controllers
         {
             try
             {
-                 _contactService.DeleteAsync(id);
+                await  _contactService.DeleteAsync(id);
                 return Ok("Contact Deleted successfully");
             }
             catch (Exception ex)
@@ -149,7 +149,7 @@ namespace ContactInfo.WebApi.Controllers
 
             try
             {
-                _contactService.UpdateAsync(contact);
+                await _contactService.UpdateAsync(contact);
                 return Ok("Contact updated successfully");
             }
             catch (Exception ex)
