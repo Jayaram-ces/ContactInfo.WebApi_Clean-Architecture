@@ -1,8 +1,8 @@
 ﻿using ContactInfo.Application.Interfaces;
 using ContactInfo.Core.Entities;
+using Microsoft.AspNetCore.JsonPatch;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace ContactInfo.Infrastructure.Services
@@ -17,7 +17,7 @@ namespace ContactInfo.Infrastructure.Services
         }
         public async Task CreateAsync(Contact contact)
         {
-           await unitOfWork.ContactRepository.AddAsync(contact);
+            await unitOfWork.ContactRepository.AddAsync(contact);
         }
 
         public async Task DeleteAsync(int id)
@@ -27,7 +27,7 @@ namespace ContactInfo.Infrastructure.Services
             if (searchContact == null)
                 throw new Exception("No such contact found in the database");
 
-           await unitOfWork.ContactRepository.DeleteAsync(id);
+            await unitOfWork.ContactRepository.DeleteAsync(id);
         }
 
         public async Task<IEnumerable<Contact>> GetAllAsync()
@@ -48,6 +48,16 @@ namespace ContactInfo.Infrastructure.Services
                 throw new Exception("No such contact found in the database");
 
             await unitOfWork.ContactRepository.UpdateAsync(contact);
+        }
+
+        public async Task<Contact> PatchAsync(int id, JsonPatchDocument<Contact> entity)
+        {
+            var searchContact = await unitOfWork.ContactRepository.GetById(id);
+
+            if (searchContact == null)
+                throw new Exception("No such contact found in the database");
+
+            return await unitOfWork.ContactRepository.PatchAsync(searchContact, entity);
         }
     }
 }

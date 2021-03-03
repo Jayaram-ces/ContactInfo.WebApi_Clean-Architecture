@@ -29,7 +29,7 @@ namespace ContactInfo.WebApi
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddInfrastructure(Configuration);
-            services.AddControllers();
+            services.AddControllers().AddNewtonsoftJson();
             
             services.AddSwaggerGen(c =>
             {

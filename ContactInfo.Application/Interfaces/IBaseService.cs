@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.AspNetCore.JsonPatch;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace ContactInfo.Application.Interfaces
@@ -10,5 +11,6 @@ namespace ContactInfo.Application.Interfaces
         Task CreateAsync(T entity);
         Task UpdateAsync(T entity);
         Task DeleteAsync(int id);
+        Task<T> PatchAsync(int id, JsonPatchDocument<T> entity);
     }
 }

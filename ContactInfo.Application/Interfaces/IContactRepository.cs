@@ -1,7 +1,6 @@
 ﻿using ContactInfo.Core.Entities;
-using System;
+using Microsoft.AspNetCore.JsonPatch;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace ContactInfo.Application.Interfaces
@@ -13,5 +12,6 @@ namespace ContactInfo.Application.Interfaces
         Task AddAsync(Contact entity);
         Task UpdateAsync(Contact entity);
         Task DeleteAsync(int id);
+        Task<Contact> PatchAsync(Contact contact, JsonPatchDocument<Contact> patchEntity);
     }
 }

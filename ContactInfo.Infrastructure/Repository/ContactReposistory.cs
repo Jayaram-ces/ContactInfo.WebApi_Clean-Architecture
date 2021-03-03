@@ -1,13 +1,16 @@
 ﻿using ContactInfo.Application.Interfaces;
 using ContactInfo.Core.Entities;
 using Dapper;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using MySqlConnector;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web.Http.ModelBinding;
 
 namespace ContactInfo.Infrastructure.Repository
 {
@@ -64,6 +67,27 @@ namespace ContactInfo.Infrastructure.Repository
 
             Transaction.Commit();
 
+        }
+
+        public async Task<Contact> PatchAsync(Contact contact, JsonPatchDocument<Contact> patchEntity)
+        {
+            string updateQuery = "UPDATE Contacts SET FirstName = @FirstName, LastName = @LastName, MobileNumber = @MobileNumber, EmailId = @EmailId  WHERE Id = @Id";
+            patchEntity.ApplyTo(contact);
+
+            Connection.Execute(updateQuery,
+                               new
+                               {
+                                   contact.Id,
+                                   contact.FirstName,
+                                   contact.LastName,
+                                   contact.MobileNumber,
+                                   contact.EmailId
+                               },
+                               transaction: Transaction
+            );
+
+            Transaction.Commit();
+            return contact;
         }
     }
 }

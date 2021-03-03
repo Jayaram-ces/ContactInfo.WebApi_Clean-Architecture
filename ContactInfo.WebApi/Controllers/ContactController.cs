@@ -2,17 +2,20 @@
 using ContactInfo.Core.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace ContactInfo.WebApi.Controllers
 {
+    /// <summary>
+    /// Contact controller to perform CRUD operations with contact entity
+    /// </summary>
     [Authorize]
     [Route("[controller]")]
     [ApiController]
@@ -120,7 +123,7 @@ namespace ContactInfo.WebApi.Controllers
         {
             try
             {
-                await  _contactService.DeleteAsync(id);
+                await _contactService.DeleteAsync(id);
                 return Ok("Contact Deleted successfully");
             }
             catch (Exception ex)
@@ -155,6 +158,27 @@ namespace ContactInfo.WebApi.Controllers
             catch (Exception ex)
             {
                 _logger.LogInformation("Failed to update the contact.");
+                _logger.LogCritical(ex, ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
+        }
+
+        [HttpPatch("{id:int}")]
+        public async Task<IActionResult> PatchAsync(int id, [FromBody] JsonPatchDocument<Contact> patchEntity)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var result = await _contactService.PatchAsync(id, patchEntity);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogInformation("Failed to update the contact using Patch request.");
                 _logger.LogCritical(ex, ex.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
